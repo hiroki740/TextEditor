@@ -5,7 +5,6 @@ import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.MenuShortcut;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -18,6 +17,8 @@ import java.io.IOException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 class TextEditor{
 	public static void main(String[] args){
@@ -26,14 +27,23 @@ class TextEditor{
 }
 
 class MainWindow extends Frame implements ActionListener{
-	TextArea textArea= new TextArea();
+	JTextArea textArea= new JTextArea();
 
-	MenuItem newFile = new MenuItem("新規作成");
-	MenuItem openFile=new MenuItem("開く");
-	MenuItem overSaveFile=new MenuItem("上書き保存");
-	MenuItem saveFile=new MenuItem("名前を付けて保存");
-	MenuItem closeFile=new MenuItem("ファイルを閉じる");
-	MenuItem appClose=new MenuItem("テキストエディタを終了");
+	//「ファイル」のメニュー項目
+	MenuItem newFileMenuItem = new MenuItem("新規作成");
+	MenuItem openFileMenuItem=new MenuItem("開く");
+	MenuItem overSaveFileMenuItem=new MenuItem("上書き保存");
+	MenuItem saveFileMenuItem=new MenuItem("名前を付けて保存");
+	MenuItem closeFileMenuItem=new MenuItem("ファイルを閉じる");
+	MenuItem appCloseMenuItem=new MenuItem("テキストエディタを終了");
+
+	//「編集」のメニュー項目
+	MenuItem unDoMenuItem=new MenuItem("元に戻す");
+	MenuItem cutOutMenuItem =new MenuItem("切り取り");
+	MenuItem copyMenuItem=new MenuItem("コピー");
+	MenuItem pastingMenuItem=new MenuItem("貼り付け");
+	MenuItem deleteMenuItem=new MenuItem("削除");
+
 
 	String fineName =null;
 
@@ -44,35 +54,63 @@ class MainWindow extends Frame implements ActionListener{
 		Menu menuFile= new Menu("ファイル");
 		Menu menuEdit= new Menu("編集");
 
-		newFile = new MenuItem("新規作成");
-		openFile=new MenuItem("ファイルを開く");
-		overSaveFile=new MenuItem("上書き保存");
-		saveFile=new MenuItem("名前を付けて保存");
-		appClose=new MenuItem("テキストエディタを終了");
+		//「ファイル」のメニュー項目
+		newFileMenuItem = new MenuItem("新規作成");
+		openFileMenuItem=new MenuItem("ファイルを開く");
+		overSaveFileMenuItem=new MenuItem("上書き保存");
+		saveFileMenuItem=new MenuItem("名前を付けて保存");
+		appCloseMenuItem=new MenuItem("テキストエディタを終了");
 
-		newFile.addActionListener(this);
-		openFile.addActionListener(this);
-		overSaveFile.addActionListener(this);
-		saveFile.addActionListener(this);
-		appClose.addActionListener(this);
+		newFileMenuItem.addActionListener(this);
+		openFileMenuItem.addActionListener(this);
+		overSaveFileMenuItem.addActionListener(this);
+		saveFileMenuItem.addActionListener(this);
+		appCloseMenuItem.addActionListener(this);
 
-		menuFile.add(newFile);
-		menuFile.add(openFile);
-		menuFile.add(overSaveFile);
-		menuFile.add(saveFile);
-		menuFile.add(appClose);
+		newFileMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_N, false));
+		openFileMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_O, false));
+		overSaveFileMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_S, false));
+		saveFileMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_S, true));
 
-		newFile.setShortcut(new MenuShortcut(KeyEvent.VK_N, false));
-		openFile.setShortcut(new MenuShortcut(KeyEvent.VK_O, false));
-		overSaveFile.setShortcut(new MenuShortcut(KeyEvent.VK_S, false));
-		saveFile.setShortcut(new MenuShortcut(KeyEvent.VK_S, true));
+		menuFile.add(newFileMenuItem);
+		menuFile.add(openFileMenuItem);
+		menuFile.add(overSaveFileMenuItem);
+		menuFile.add(saveFileMenuItem);
+		menuFile.add(appCloseMenuItem);
 
+		//「編集」のメニュー項目
+		unDoMenuItem=new MenuItem("元に戻す");
+		cutOutMenuItem =new MenuItem("切り取り");
+		copyMenuItem=new MenuItem("コピー");
+		pastingMenuItem=new MenuItem("貼り付け");
+		deleteMenuItem=new MenuItem("削除");
+
+		unDoMenuItem.addActionListener(this);
+		cutOutMenuItem.addActionListener(this);
+		copyMenuItem.addActionListener(this);
+		pastingMenuItem.addActionListener(this);
+		deleteMenuItem.addActionListener(this);
+
+		unDoMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_Z, false));
+		cutOutMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_X, false));
+		copyMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_C, false));
+		pastingMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_V, false));
+		deleteMenuItem.setShortcut(new MenuShortcut(KeyEvent.VK_DELETE));
+
+		menuEdit.add(unDoMenuItem);
+		menuEdit.add(cutOutMenuItem);
+		menuEdit.add(copyMenuItem);
+		menuEdit.add(pastingMenuItem);
+		menuEdit.add(deleteMenuItem);
+
+		//メニューバー
 		meun.setFont(new Font("MS Gothic", Font.PLAIN, 14));
 		meun.add(menuFile);
 		meun.add(menuEdit);
 		setMenuBar(meun);
 
-		textArea= new TextArea();
+		textArea= new JTextArea();
+		JScrollPane scrollpane=new JScrollPane(textArea,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		textArea.setFont(new Font("Arial", Font.PLAIN, 21));
 		add(textArea);
 
@@ -81,19 +119,29 @@ class MainWindow extends Frame implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent e){
-		if(e.getSource()==newFile) NewCreateFiile();
-		if(e.getSource()==openFile) OpenLoadFile();
-		if(e.getSource()==overSaveFile) OverSaveFile();
-		if(e.getSource()==saveFile) NewSaveFile();
-		if(e.getSource()==appClose) System.exit(0);
+		//「ファイル」のメニュー項目
+		if(e.getSource()==newFileMenuItem) NewCreateFiile();
+		if(e.getSource()==openFileMenuItem) OpenLoadFile();
+		if(e.getSource()==overSaveFileMenuItem) OverSaveFile();
+		if(e.getSource()==saveFileMenuItem) NewSaveFile();
+		if(e.getSource()==appCloseMenuItem) System.exit(0);
+
+		//「編集」のメニュー項目
+		if(e.getSource()==unDoMenuItem) textArea.copy();
+		if(e.getSource()==cutOutMenuItem) textArea.cut();
+		if(e.getSource()==copyMenuItem) textArea.copy();
+		if(e.getSource()==pastingMenuItem) textArea.paste();
+		if(e.getSource()==deleteMenuItem) NewCreateFiile();
 	}
 
+	//新規
 	void NewCreateFiile(){
-		textArea.setText("");
+		textArea=new JTextArea();
 		NowFilePath=null;
 		setTitle("無題-テキストエディタ");
 	}
 
+	//開く
 	void OpenLoadFile(){
 		FileDialog fileDialog= new FileDialog(this,"ファイルを開く",FileDialog.LOAD);
 		fileDialog.setVisible(true);
@@ -123,6 +171,7 @@ class MainWindow extends Frame implements ActionListener{
 		 }
 	 }
 
+	//上書き保存
 	String NowFilePath =null;
 	void OverSaveFile(){
 		try{
@@ -139,6 +188,7 @@ class MainWindow extends Frame implements ActionListener{
 		}
 	}
 
+	//名前を付けて保存
 	 void NewSaveFile(){
 		 FileDialog fileDialog= new FileDialog(this,"名前を付けて保存",FileDialog.SAVE);
 		 fileDialog.setVisible(true);
@@ -157,6 +207,24 @@ class MainWindow extends Frame implements ActionListener{
 			 }
 		 }
 	 }
+
+	 //元に戻す
+	 void UnDoEdit(){
+
+	 }
+
+	 //切り取り
+	 void CutOutEdit(){
+
+	 }
+
+	 //
+
+}
+
+//メニュークラス
+class MenuAction{
+
 }
 
 class WinListener extends WindowAdapter{
